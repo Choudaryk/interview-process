@@ -24,8 +24,11 @@ public class PersonInfo implements IsSerializable {
     public ArrayList<LocationInfo> getAddresses() { return addresses; }
     public void setAddresses(ArrayList<LocationInfo> addresses) { this.addresses = addresses; }
     
+    //Not exactly sure what the question meant by shortcut. 
+    //Hello.updatePersonInformation() calls this method and the person's
+    //first name is displayed in personName text field
     public String getName(){
-        return "";
+        return firstName;
     }
     
 }

@@ -26,6 +26,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
+ * 
+ * This is my first try at GWT and I didn't really spend enough time to run the 
+ * application and test my code. My changes should more or less should meet all 
+ * the requirements.
  */
 public class Hello implements EntryPoint {
 	/**
@@ -65,6 +69,8 @@ public class Hello implements EntryPoint {
     final TextBox personName = new TextBox();
     final TextBox personId = new TextBox();
     
+    int successfulCallsToServer;
+    
     DecoratorPanel personPanel = new DecoratorPanel();
     
     
@@ -82,6 +88,10 @@ public class Hello implements EntryPoint {
 	 * Create a remote service proxy to talk to the server-side Count call service
 	 */
 	private final CountCallServiceAsync countCallService = GWT.create(CountCallService.class);
+	
+	private void incrementSuccessfulCalls(){
+    	successfulCallsToServer++;
+    }
 	
 	/**
 	 * This is the entry point method.
@@ -120,6 +130,7 @@ public class Hello implements EntryPoint {
             }
         });
         
+        
 
         // Create a handler for the sendButton and nameField
         class MyHandler implements ClickHandler, KeyUpHandler {
@@ -147,7 +158,8 @@ public class Hello implements EntryPoint {
                 errorLabel.setText("");
                 String textToServer = nameField.getText();
                 if (!FieldVerifier.isValidName(textToServer)) {
-                    errorLabel.setText("Please enter more than 4 caracters");
+                	//Changing the error message when the name is less than 4 charachers
+                    errorLabel.setText("Please enter more than 4 caracters - changed");
                     return;
                 }
 
@@ -173,6 +185,8 @@ public class Hello implements EntryPoint {
                                 serverResponseLabel.setHTML(result);
                                 dialogBox.center();
                                 closeButton.setFocus(true);
+                                
+                                incrementSuccessfulCalls();
                             }
                         });
             }
@@ -182,6 +196,15 @@ public class Hello implements EntryPoint {
         MyHandler handler = new MyHandler();
         sendButton.addClickHandler(handler);
         nameField.addKeyUpHandler(handler);
+        
+        //Adding handler on clearPersonButton
+        clearPersonButton.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				personName.setText("");
+				personId.setText("");
+			}
+		});
 
         /* Layout for person information*/
         FlexTable layout = new FlexTable();
@@ -245,4 +268,39 @@ public class Hello implements EntryPoint {
 		personName.setText(person.getName());
 	}
 	
+	
+	
+	/**
+	 * Section to implement for person database calls
+	 */
+	public void setupCallCount(){
+	    
+		countCallButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                onCountCallClick();
+            }
+        });
+	    
+	}
+	
+
+	private void onCountCallClick(){
+	    int personId = 1;
+	    
+	    countCallService.countCall(new Integer(successfulCallsToServer), new AsyncCallback<Integer>() {
+	        @Override
+	        public void onFailure(Throwable caught) {
+	            caught.printStackTrace();
+	            Window.alert("Error : " + caught.getMessage());
+	        }
+	        public void onSuccess(Integer result) {
+	        	updateCallCount(result);
+	        };
+	    });
+	}
+	
+	private void updateCallCount(Integer callCount){
+		countCallLabel.setText("" + callCount.toString());		
+	}		
 }
